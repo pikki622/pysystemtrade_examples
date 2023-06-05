@@ -16,9 +16,7 @@ def clean_data(x, y, maxstd=6.0):
             return xitem
         if xitem > cap:
             return cap
-        if xitem < -cap:
-            return -cap
-        return xitem
+        return -cap if xitem < -cap else xitem
 
     x = [_cap(xitem, xcap) for xitem in x]
     y = [_cap(yitem, ycap) for yitem in y]
@@ -150,8 +148,9 @@ def fit_a_filter_datewise(system,
 
     filter_data = []
     for fit_period in fit_dates:
-        system.log.msg("Estimating fitting from %s to %s" %
-                       (fit_period.period_start, fit_period.period_end))
+        system.log.msg(
+            f"Estimating fitting from {fit_period.period_start} to {fit_period.period_end}"
+        )
 
         if fit_period.no_data:
             data = [None, None]
@@ -277,9 +276,10 @@ class newfsc(ForecastScaleCapEstimated):
 
     def get_fitted_values(self, instrument_code, rule_variation_name):
         def _get_fitted_values(system, instrument_code, rule_variation_name,
-                               this_stage, **kwargs):
-            this_stage.log.terse("Fitting mapping for %s %s " %
-                                 (instrument_code, rule_variation_name))
+                                   this_stage, **kwargs):
+            this_stage.log.terse(
+                f"Fitting mapping for {instrument_code} {rule_variation_name} "
+            )
             if instrument_code == ALL_KEYNAME:
                 instrument_code = None
 
@@ -292,14 +292,7 @@ class newfsc(ForecastScaleCapEstimated):
         pool_instruments = str2Bool(
             instrument_fit_config.pop("pool_instruments"))
 
-        if pool_instruments:
-            # pooled, same for all instruments
-            instrument_code_key = ALL_KEYNAME
-
-        else:
-            ## not pooled
-            instrument_code_key = instrument_code
-
+        instrument_code_key = ALL_KEYNAME if pool_instruments else instrument_code
         fitted_values = self.parent.calc_or_cache_nested(
             "get_fitted_values", instrument_code_key, rule_variation_name,
             _get_fitted_values, self, **instrument_fit_config)
@@ -310,10 +303,9 @@ class newfsc(ForecastScaleCapEstimated):
         """
         Old method for raw forecast, keep so we can pipe this in
         """
-        raw_forecast = self.parent.rules.get_raw_forecast(
-            instrument_code, rule_variation_name)
-
-        return raw_forecast
+        return self.parent.rules.get_raw_forecast(
+            instrument_code, rule_variation_name
+        )
 
 
 rulename = "ewmac64_256"

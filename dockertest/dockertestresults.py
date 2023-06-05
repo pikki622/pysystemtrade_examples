@@ -4,6 +4,6 @@ from matplotlib.pyplot import show
 resultsdir = "/home/rob/results"
 
 system = futures_system(log_level="on")
-system.unpickle_cache("", resultsdir + "/dockertest.pck")
+system.unpickle_cache("", f"{resultsdir}/dockertest.pck")
 # this will run much faster and reuse previous calculations
 print(system.accounts.portfolio().sharpe())

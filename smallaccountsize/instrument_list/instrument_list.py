@@ -38,10 +38,12 @@ def asset_class_count(portfolio, all_assets, assetclasess):
     assets_in_portfolio = [
         instr_asset_class(code, assetclasses) for code in portfolio
     ]
-    ans = dict([(asset_class, assets_in_portfolio.count(asset_class))
-                for asset_class in all_assets])
-
-    return ans
+    return dict(
+        [
+            (asset_class, assets_in_portfolio.count(asset_class))
+            for asset_class in all_assets
+        ]
+    )
 
 
 def which_asset_classes_next(my_portfolio, suitable_instruments, all_assets,
@@ -63,22 +65,23 @@ def which_asset_classes_next(my_portfolio, suitable_instruments, all_assets,
     ]
 
     largest_asset_class_size_in_portfolio = max(
-        [assets_in_my_portfolio[asset_class] for asset_class in available])
+        assets_in_my_portfolio[asset_class] for asset_class in available
+    )
 
-    if all([
-            assets_in_my_portfolio[asset_class] ==
-            largest_asset_class_size_in_portfolio for asset_class in available
-    ]):
+    if all(
+        assets_in_my_portfolio[asset_class]
+        == largest_asset_class_size_in_portfolio
+        for asset_class in available
+    ):
         return available
 
-    underweight = [
-        asset_class for asset_class in all_assets
-        if assets_in_my_portfolio[asset_class] <
-        largest_asset_class_size_in_portfolio and
-        suitable_assets[asset_class] > 0
+    return [
+        asset_class
+        for asset_class in all_assets
+        if assets_in_my_portfolio[asset_class]
+        < largest_asset_class_size_in_portfolio
+        and suitable_assets[asset_class] > 0
     ]
-
-    return underweight
 
 
 def rank_within_asset_class(asset_class, suitable_instruments, assetclasses,
@@ -134,9 +137,7 @@ def average_correlation(instrument_code,
     portfolio_index = [portfolio.index(code) for code in portfolio]
     sub_corrmat = corrmat[:, [portfolio_index]][instruments.index(
         instrument_code), :]
-    avg_corr = np.mean(sub_corrmat)
-
-    return avg_corr
+    return np.mean(sub_corrmat)
 
 
 def return_lowest_five(avg_correlation_list, suitable_instruments):
@@ -146,9 +147,7 @@ def return_lowest_five(avg_correlation_list, suitable_instruments):
 
     order = np.array(avg_correlation_list).argsort()
     top_five = order[:5]
-    shortlist = [suitable_instruments[xidx] for xidx in top_five]
-
-    return shortlist
+    return [suitable_instruments[xidx] for xidx in top_five]
 
 
 def return_highest_max_position(shortlist, max_positions):

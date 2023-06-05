@@ -34,7 +34,7 @@ def some_random_bootstrapped_returns(returns, horizon=None):
     if horizon is None:
         horizon = len(returns.index)
 
-    draws = [int(random.uniform(0, len(returns))) for notused in range(horizon)]
+    draws = [int(random.uniform(0, len(returns))) for _ in range(horizon)]
 
     return returns.iloc[draws,]
 
@@ -47,7 +47,7 @@ def statistic_from_bootstrap(returns, stat_function, horizon=None):
 def distribution_of_statistic(returns, stat_function, monte_length=1000, horizon=None, colnames=code_list):
     list_of_bs_stats = []
     thing=progressBar(monte_length)
-    for notUsed in range(monte_length):
+    for _ in range(monte_length):
         list_of_bs_stats.append(statistic_from_bootstrap(returns, stat_function, horizon=horizon))
         thing.iterate()
 
@@ -93,9 +93,7 @@ def optimisation(weekly_returns, equalisecorr=False, equaliseSR=False, riskweigh
 def optimisation_with_data(corrmatrix, mean_list, stdev_list):
     sigma = sigma_from_corr_and_std(stdev_list, corrmatrix)
 
-    weights = optimise(sigma, mean_list)
-
-    return weights
+    return optimise(sigma, mean_list)
 
 
 cset=["red","blue","green","black", "yellow"]
@@ -165,9 +163,9 @@ def get_rolling_estimate(returns, func_name, value_index=0, monte_length=1000):
         upper_points.append(subset_distribution.quantile(0.9)[value_index])
         thing.iterate()
 
-    output = pd.DataFrame(dict(upper=upper_points, lower=lower_points), index=slice_end)
-
-    return output
+    return pd.DataFrame(
+        dict(upper=upper_points, lower=lower_points), index=slice_end
+    )
 
 sr_5y= get_rolling_estimate(returns, sharpe_ratio, monte_length=1000, value_index=2)
 std_5y=get_rolling_estimate(returns, annualised_std, monte_length=1000, value_index=2)
@@ -237,7 +235,7 @@ def rolling_optimisation(weekly_returns, opt_function=optimisation, **kwargs):
 
 def bootstrapped_optimisation(weekly_returns, monte_carlo=1000, **kwargs):
     weights=[]
-    for notUsed in range(monte_carlo):
+    for _ in range(monte_carlo):
         sampled_data=some_random_bootstrapped_returns(weekly_returns)
         sample_weights = optimisation(sampled_data, **kwargs)
         weights.append(sample_weights)
@@ -262,19 +260,15 @@ rolling_optimisation(returns, bootstrapped_optimisation).plot()
 def measure_12_month_momentum(weekly_returns):
     return_last_year = 52.0*weekly_returns.rolling(center=False, window=52, min_periods=1).mean()
     std_last_year = (52.0**.5)*weekly_returns.rolling(center=False, window=52, min_periods=1).std()
-    sr_last_year = return_last_year / std_last_year
-
-    return sr_last_year
+    return return_last_year / std_last_year
 
 def measure_abs_momentum(weekly_returns):
     code_list = weekly_returns.columns
-    abs_mom={}
-    for code in code_list:
-        abs_mom[code] = measure_12_month_momentum(weekly_returns[code])
-
-    abs_mom_all = pd.DataFrame(abs_mom)
-
-    return abs_mom_all
+    abs_mom = {
+        code: measure_12_month_momentum(weekly_returns[code])
+        for code in code_list
+    }
+    return pd.DataFrame(abs_mom)
 
 # we don't use this function, but it could be useful
 def measure_relative_momentum(weekly_returns):
@@ -308,9 +302,11 @@ def subset_data_by_momentum_range(weekly_returns,  mrange=[-999, -2.0]):
 
 def distribution_by_momentum_range(weekly_returns,  stat_function, mrange=[-999, -2.0]):
     subset_returns = pd.DataFrame(subset_data_by_momentum_range(weekly_returns, mrange=mrange))
-    distr = distribution_of_statistic(subset_returns, stat_function, colnames=["%2.f:%.2f" % (mrange[0], mrange[1])])
-
-    return distr
+    return distribution_of_statistic(
+        subset_returns,
+        stat_function,
+        colnames=["%2.f:%.2f" % (mrange[0], mrange[1])],
+    )
 
 
 

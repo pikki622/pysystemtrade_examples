@@ -18,9 +18,10 @@ perc[abs(perc)>0.03]=np.nan
 
 def get_expost_data(perc):
     fitting_dates = generate_fitting_dates(perc, "rolling") ## only using annual dates rolling doesn't matter
-    expost_data = [perc[fit_date.period_start:fit_date.period_end] for fit_date in fitting_dates[1:]]
-
-    return expost_data
+    return [
+        perc[fit_date.period_start : fit_date.period_end]
+        for fit_date in fitting_dates[1:]
+    ]
 
 
 
@@ -55,15 +56,12 @@ def calc_historic_mean_distr_annual(perc, fit_date):
 
 def single_bootstrap_from_data(data):
     n = len(data)
-    bootstraps = [int(np.random.uniform(high=n)) for not_used in range(n)]
-    bs_data=[data[bsnumber] for bsnumber in bootstraps]
-    return bs_data
+    bootstraps = [int(np.random.uniform(high=n)) for _ in range(n)]
+    return [data[bsnumber] for bsnumber in bootstraps]
 
 def gen_bootstraps_from_data(data, monte_carlo=500):
 
-    all_bs = [single_bootstrap_from_data(data) for not_used in range(monte_carlo)]
-
-    return all_bs
+    return [single_bootstrap_from_data(data) for _ in range(monte_carlo)]
 
 
 def calc_historic_SR_distr_annual(perc, fit_date):
@@ -71,9 +69,7 @@ def calc_historic_SR_distr_annual(perc, fit_date):
     SR = data.mean() / data.std()
     SR_std = ((1+.5*SR**2)/len(data))**.5
 
-    conf_interval = (16*(SR - 2*SR_std), 16*(SR + 2*SR_std))
-
-    return conf_interval
+    return 16*(SR - 2*SR_std), 16*(SR + 2*SR_std)
 
 
 def calc_historic_std_distr_annual(perc, fit_date):
@@ -92,9 +88,7 @@ def calc_historic_distr_annual(perc, fit_date):
     data_mean = data.mean()
     data_std = data.std()
 
-    conf_interval = (data_mean - 1.96*data_std, data_mean + 1.96*data_std)
-
-    return conf_interval
+    return data_mean - 1.96*data_std, data_mean + 1.96*data_std
 
 
 def ewmav(x, span=35):
@@ -114,12 +108,12 @@ def generate_fitting_dates(data, date_method, period="12M",rollperiods=20):
 
     if date_method not in ["in_sample", "rolling", "expanding"]:
         raise Exception(
-            "don't recognise date_method %s should be one of in_sample, expanding, rolling"
-            % date_method)
+            f"don't recognise date_method {date_method} should be one of in_sample, expanding, rolling"
+        )
 
     if isinstance(data, list):
-        start_date = min([dataitem.index[0] for dataitem in data])
-        end_date = max([dataitem.index[-1] for dataitem in data])
+        start_date = min(dataitem.index[0] for dataitem in data)
+        end_date = max(dataitem.index[-1] for dataitem in data)
     else:
         start_date = data.index[0]
         end_date = data.index[-1]
@@ -149,13 +143,13 @@ def generate_fitting_dates(data, date_method, period="12M",rollperiods=20):
             fit_start = period_starts[yearidx_to_use]
         else:
             raise Exception(
-                "don't recognise date_method %s should be one of in_sample, expanding, rolling"
-                % date_method)
+                f"don't recognise date_method {date_method} should be one of in_sample, expanding, rolling"
+            )
 
         if date_method in ['rolling', 'expanding']:
             fit_end = period_start
         else:
-            raise Exception("don't recognise date_method %s " % date_method)
+            raise Exception(f"don't recognise date_method {date_method} ")
 
         periods.append(
             fit_dates_object(fit_start, fit_end, period_start, period_end))

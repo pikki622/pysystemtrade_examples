@@ -52,5 +52,5 @@ pandl.ffill().rolling(100).std().plot()
 x=system.accounts.pandl_across_subsystems()
 y=x.to_frame()
 z=y.rolling(100).corr()
-values = [-z.iloc[rowid,:][1] for rowid in range(int(len(z)/2))]
+values = [-z.iloc[rowid,:][1] for rowid in range(len(z) // 2)]
 values = pd.DataFrame(list(values), x.index)

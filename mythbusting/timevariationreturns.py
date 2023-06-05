@@ -79,9 +79,7 @@ def clean_data(x, y, maxstd=6.0):
             return xitem
         if xitem > cap:
             return cap
-        if xitem < -cap:
-            return -cap
-        return xitem
+        return -cap if xitem < -cap else xitem
 
     x = [_cap(xitem, xcap) for xitem in x]
     y = [_cap(yitem, ycap) for yitem in y]

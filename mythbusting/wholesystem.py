@@ -25,9 +25,9 @@ system.set_logging_level("on")
 instrument_list = system.get_instrument_list()
 trading_rules = system.rules.trading_rules().keys()
 
-ans = dict()
+ans = {}
 for instrument_code in instrument_list:
-    ans[instrument_code] = dict()
+    ans[instrument_code] = {}
     for rule in trading_rules:
         ans[instrument_code][
             rule] = system.accounts.pandl_for_instrument_forecast(
@@ -36,25 +36,24 @@ for instrument_code in instrument_list:
 # average rule / instrument
 ans = []
 for instrument_code in instrument_list:
-    for rule in trading_rules:
-        ans.append(
-            system.accounts.pandl_for_instrument_forecast(
-                instrument_code, rule).sharpe())
-
+    ans.extend(
+        system.accounts.pandl_for_instrument_forecast(
+            instrument_code, rule
+        ).sharpe()
+        for rule in trading_rules
+    )
 np.mean(ans)
 
-# average Rule
-ans = []
-for rule in trading_rules:
-    ans.append(system.accounts.pandl_for_trading_rule(rule).sharpe())
-
+ans = [
+    system.accounts.pandl_for_trading_rule(rule).sharpe()
+    for rule in trading_rules
+]
 print(ans)
 
-# average instrument
-ans = []
-for instrument_code in instrument_list:
-    ans.append(system.accounts.pandl_for_subsystem(instrument_code).sharpe())
-
+ans = [
+    system.accounts.pandl_for_subsystem(instrument_code).sharpe()
+    for instrument_code in instrument_list
+]
 print(ans)
 
 # portfolio

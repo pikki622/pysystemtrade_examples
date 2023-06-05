@@ -8,14 +8,14 @@ base_config = base_system.config
 
 instruments = base_system.get_instrument_list()
 
-results = dict()
+results = {}
 wlist = [1,2,3,4,5,6,7,8,9,10,15,20,25,30,35,40,45,50,60,70,80,90,100,125,150,175,200,250]
 #wlist = [1,250]
 
 instrument_list = base_system.get_instrument_list()
 
 from syscore.genutils import progressBar
-thing=progressBar(len(wlist)*len(wlist)*len(instrument_list))
+thing = progressBar(len(wlist)**2 * len(instrument_list))
 
 for Aspeed in wlist:
     for Bspeed in wlist:
@@ -39,7 +39,6 @@ for Aspeed in wlist:
             results[results_key]=acc
             thing.iterate()
 
-f = open('/home/rob/results.pck', "wb")
-dump(results, f)
-f.close()
+with open('/home/rob/results.pck', "wb") as f:
+    dump(results, f)
 

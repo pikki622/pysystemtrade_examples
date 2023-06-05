@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from matplotlib.pyplot import show, legend, matshow
 
-bvariations = ["breakout" + str(ws) for ws in [10, 20, 40, 80, 160, 320]]
+bvariations = [f"breakout{str(ws)}" for ws in [10, 20, 40, 80, 160, 320]]
 evariations = [
     "ewmac%d_%d" % (fast, fast * 4) for fast in [2, 4, 8, 16, 32, 64]
 ]

@@ -27,9 +27,10 @@ perc['US10'][abs(perc['US10'])>0.03]=np.nan
 
 def get_expost_data(perc):
     fitting_dates = generate_fitting_dates(perc, "rolling") ## only using annual dates rolling doesn't matter
-    expost_data = [perc[fit_date.period_start:fit_date.period_end] for fit_date in fitting_dates[1:]]
-
-    return expost_data
+    return [
+        perc[fit_date.period_start : fit_date.period_end]
+        for fit_date in fitting_dates[1:]
+    ]
 
 
 def generate_fitting_dates(data, date_method, period="12M",rollperiods=20):
@@ -45,12 +46,12 @@ def generate_fitting_dates(data, date_method, period="12M",rollperiods=20):
 
     if date_method not in ["in_sample", "rolling", "expanding"]:
         raise Exception(
-            "don't recognise date_method %s should be one of in_sample, expanding, rolling"
-            % date_method)
+            f"don't recognise date_method {date_method} should be one of in_sample, expanding, rolling"
+        )
 
     if isinstance(data, list):
-        start_date = min([dataitem.index[0] for dataitem in data])
-        end_date = max([dataitem.index[-1] for dataitem in data])
+        start_date = min(dataitem.index[0] for dataitem in data)
+        end_date = max(dataitem.index[-1] for dataitem in data)
     else:
         start_date = data.index[0]
         end_date = data.index[-1]
@@ -80,13 +81,13 @@ def generate_fitting_dates(data, date_method, period="12M",rollperiods=20):
             fit_start = period_starts[yearidx_to_use]
         else:
             raise Exception(
-                "don't recognise date_method %s should be one of in_sample, expanding, rolling"
-                % date_method)
+                f"don't recognise date_method {date_method} should be one of in_sample, expanding, rolling"
+            )
 
         if date_method in ['rolling', 'expanding']:
             fit_end = period_start
         else:
-            raise Exception("don't recognise date_method %s " % date_method)
+            raise Exception(f"don't recognise date_method {date_method} ")
 
         periods.append(
             fit_dates_object(fit_start, fit_end, period_start, period_end))
@@ -124,15 +125,12 @@ def calc_historic_confidence(perc, function_to_use, rollperiods=250):
 
 def single_bootstrap_from_data(data):
     n = len(data)
-    bootstraps = [int(np.random.uniform(high=n)) for not_used in range(n)]
-    bs_data=[data.iloc[bsnumber] for bsnumber in bootstraps]
-    return bs_data
+    bootstraps = [int(np.random.uniform(high=n)) for _ in range(n)]
+    return [data.iloc[bsnumber] for bsnumber in bootstraps]
 
 def gen_bootstraps_from_data(data, monte_carlo=100):
 
-    all_bs = [single_bootstrap_from_data(data) for not_used in range(monte_carlo)]
-
-    return all_bs
+    return [single_bootstrap_from_data(data) for _ in range(monte_carlo)]
 
 
 def calc_historic_corr_distr_annual__us10_us5(perc, fit_date):

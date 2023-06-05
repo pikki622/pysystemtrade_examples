@@ -6,13 +6,8 @@ instrument_list = [
     'BUND', 'BTP', 'US20'
 ]
 
-instrument_sets = []
-for idx in range(9)[1:]:
-    instrument_sets.append(instrument_list[:idx])
-
-for idx in [15, 20, 25, 38]:
-    instrument_sets.append(instrument_list[:idx])
-
+instrument_sets = [instrument_list[:idx] for idx in range(9)[1:]]
+instrument_sets.extend(instrument_list[:idx] for idx in [15, 20, 25, 38])
 from systems.portfolio import PortfoliosEstimated
 from systems.provided.futures_chapter15.basesystem import *
 from syscore.correlations import get_avg_corr
@@ -28,7 +23,7 @@ idm = []
 acc_curve = []
 roll_acc = []
 
-for (idx, instr_set) in enumerate(instrument_sets):
+for instr_set in instrument_sets:
     config.instruments = instr_set
     system = System([
         Account(), PortfoliosEstimated(), PositionSizing(), FuturesRawData(),
