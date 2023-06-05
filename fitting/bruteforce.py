@@ -5,28 +5,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-f = open('/home/rob/results.pck', "rb")
-results = load(f)
-f.close()
-
+with open('/home/rob/results.pck', "rb") as f:
+    results = load(f)
 irange = [xkey[0] for xkey in results.keys()]
 jrange = [xkey[1] for xkey in results.keys()]
 instruments = [xkey[2] for xkey in results.keys()]
 
-irange = list(set(irange))
-jrange = list(set(jrange))
-irange.sort()
-jrange.sort()
-
+irange = sorted(set(irange))
+jrange = sorted(set(jrange))
 instruments = list(set(instruments))
 
 
 instrument="V2X"
 
 def get_results(results, i, j, instrument):
-    if i==j:
-        return np.nan
-    return results[(i, j, instrument)].mean() * 250
+    return np.nan if i==j else results[(i, j, instrument)].mean() * 250
 
 plot_results = np.array([[get_results(results,i,j, instrument) for i in irange] for j in jrange])
 
@@ -61,15 +54,11 @@ def t_test(acc1, acc2):
     omega_1 = acc1.std() / (len(acc1.index)**.5)
 
     var_diff = 2 * (omega_1**2) * (1-corr)
-    t_stat = diff / (var_diff**.5)
-
-    return t_stat
+    return diff / (var_diff**.5)
 
 
 def get_ttest_results(results, i, j, instrument, max_acc):
-    if i==j:
-        return np.nan
-    return t_test(max_acc, results[(i, j, instrument)])
+    return np.nan if i==j else t_test(max_acc, results[(i, j, instrument)])
 
 
 def get_corr_results(results, i, j, instrument, max_acc):
@@ -115,14 +104,12 @@ plt.show()
 
 
 def pooled_results(results, i,j):
-    all_results = pd.concat([results[(i, j, instrument)] for instrument in instruments], axis=0)
-    return all_results
+    return pd.concat(
+        [results[(i, j, instrument)] for instrument in instruments], axis=0
+    )
 
 def get_results_all_instruments(results, i, j):
-    if i==j:
-        return np.nan
-
-    return pooled_results(results, i, j).mean() * 250
+    return np.nan if i==j else pooled_results(results, i, j).mean() * 250
 
 plot_results = np.array([[get_results_all_instruments(results,i,j) for i in irange] for j in jrange])
 
@@ -141,9 +128,7 @@ ax.set_ylabel("B")
 plt.show()
 
 def get_ttest_results_pooled(results, i, j,  max_acc):
-    if i==j:
-        return np.nan
-    return t_test(max_acc, pooled_results(results, i, j))
+    return np.nan if i==j else t_test(max_acc, pooled_results(results, i, j))
 
 plot_results[np.isnan(plot_results)]=-1000000
 max_values=np.unravel_index(plot_results.argmax(), plot_results.shape)

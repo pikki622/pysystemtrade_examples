@@ -14,8 +14,9 @@ class ForecastWithBinary(ForecastCombineFixed):
     def get_combined_forecast(self, instrument_code):
         def _get_combined_forecast(system, instrument_code, this_stage):
             this_stage.log.msg(
-                "Calculating combined forecast for %s" % (instrument_code),
-                instrument_code=instrument_code)
+                f"Calculating combined forecast for {instrument_code}",
+                instrument_code=instrument_code,
+            )
 
             forecast_weights = this_stage.get_forecast_weights(instrument_code)
             rule_variation_list = list(forecast_weights.columns)
@@ -57,8 +58,9 @@ class ForecastWithThreshold(ForecastCombineFixed):
     def get_combined_forecast(self, instrument_code):
         def _get_combined_forecast(system, instrument_code, this_stage):
             this_stage.log.msg(
-                "Calculating combined forecast for %s" % (instrument_code),
-                instrument_code=instrument_code)
+                f"Calculating combined forecast for {instrument_code}",
+                instrument_code=instrument_code,
+            )
 
             forecast_weights = this_stage.get_forecast_weights(instrument_code)
             rule_variation_list = list(forecast_weights.columns)
@@ -91,9 +93,7 @@ class ForecastWithThreshold(ForecastCombineFixed):
                     return -(abs(x) - 10.0) * 3
                 if x >= -10.0 and x <= 10.0:
                     return 0.0
-                if x > 10.0 and x <= 20.0:
-                    return (abs(x) - 10.0) * 3
-                return 30.0
+                return (abs(x) - 10.0) * 3 if x > 10.0 and x <= 20.0 else 30.0
 
             combined_forecast = pd.DataFrame(
                 [map_forecast_value(x)

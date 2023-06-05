@@ -52,7 +52,7 @@ def create_data_for_random_system():
 def create_rules_for_random_system():
     ## create a series of regression trading rules different lookbacks
 
-    rules_dict = dict()
+    rules_dict = {}
     for timewindow in WINDOWS_TO_USE:
         rule_name = "regression%d" % timewindow
 
@@ -64,9 +64,7 @@ def create_rules_for_random_system():
 
         rules_dict[rule_name] = new_rule
 
-    my_rules = Rules(rules_dict)
-
-    return my_rules
+    return Rules(rules_dict)
 
 
 def random_system_for_regression(data, config, rules, log_level="on"):

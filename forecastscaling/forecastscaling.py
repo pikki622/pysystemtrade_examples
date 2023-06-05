@@ -13,22 +13,34 @@ system.config.forecast_scalar_estimate['pool_instruments'] = False
 instrument_list = system.get_instrument_list()
 print(instrument_list)
 
-results = []
-for instrument_code in instrument_list:
-    results.append(
-        round(
-            float(
-                system.forecastScaleCap.get_forecast_scalar(
-                    instrument_code, "ewmac2_8").tail(1).values), 2))
+results = [
+    round(
+        float(
+            system.forecastScaleCap.get_forecast_scalar(
+                instrument_code, "ewmac2_8"
+            )
+            .tail(1)
+            .values
+        ),
+        2,
+    )
+    for instrument_code in instrument_list
+]
 print(results)
 
-results = []
-for instrument_code in instrument_list:
-    results.append(
-        round(
-            float(
-                system.forecastScaleCap.get_forecast_scalar(
-                    instrument_code, "carry").tail(1).values), 2))
+results = [
+    round(
+        float(
+            system.forecastScaleCap.get_forecast_scalar(
+                instrument_code, "carry"
+            )
+            .tail(1)
+            .values
+        ),
+        2,
+    )
+    for instrument_code in instrument_list
+]
 print(results)
 """
  Use an expanding window

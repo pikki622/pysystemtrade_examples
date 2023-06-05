@@ -23,13 +23,14 @@ def get_vix_data():
     return pd.Series([process_row(x) for x in vix_spot.values], vix_spot.index).ffill()
 
 def get_us_long_data():
-    us_long_data = pd_readcsv_frompackage("examples.vix.US_monthly_returns.csv")
-    return us_long_data
+    return pd_readcsv_frompackage("examples.vix.US_monthly_returns.csv")
 
 # functions to do conditional binning
 def half_split(conditioner):
-    binrange = [[conditioner.min(), conditioner.median()], [conditioner.median(), conditioner.max()]]
-    return binrange
+    return [
+        [conditioner.min(), conditioner.median()],
+        [conditioner.median(), conditioner.max()],
+    ]
 
 def deciles(conditioner):
     return [[conditioner.min(), np.percentile(conditioner.values, 10)], [np.percentile(conditioner.values, 90), conditioner.max()]]
@@ -98,7 +99,7 @@ def do_a_plot(response_variable, conditioner, lag_response=True, frequency="D", 
 
     colors = ["red", "blue", "green"]
     all_bin_range = np.max(np.max(np.array(bin_data))) - np.min(np.min(np.array(bin_data)))
-    desired_bin_count = sum([len(x) for x in bin_data]) / target_in_bin
+    desired_bin_count = sum(len(x) for x in bin_data) / target_in_bin
     desired_bin_width = all_bin_range / desired_bin_count
 
     for my_color, one_bin in zip(colors, bin_data):
@@ -115,12 +116,15 @@ def do_a_plot(response_variable, conditioner, lag_response=True, frequency="D", 
     plt.legend(my_bin_labels)
     plt.show()
     meanstring=["%.5f (%s) " % (np.mean(one_bin), bin_label) for one_bin, bin_label in zip(bin_data, my_bin_labels)]
-    print("Means %s" % "".join(meanstring))
+    print(f'Means {"".join(meanstring)}')
 
     return bin_data
 
 def _sample_this(thingtosample, sample_length):
-    indices= [int(np.random.uniform() * len(thingtosample)) for notused in range(sample_length)]
+    indices = [
+        int(np.random.uniform() * len(thingtosample))
+        for _ in range(sample_length)
+    ]
     return [thingtosample[idx] for idx in indices]
 
 def paired_test(bin_data, number_of_runs=200):
@@ -129,7 +133,7 @@ def paired_test(bin_data, number_of_runs=200):
 
     diffs = []
     pb=progressBar(number_of_runs)
-    for notUsed in range(number_of_runs):
+    for _ in range(number_of_runs):
         first_sample = _sample_this(bin_data[0], sample_length)
         second_sample = _sample_this(bin_data[1], sample_length)
         sample_diff = [x-y for x,y in zip(first_sample, second_sample)]

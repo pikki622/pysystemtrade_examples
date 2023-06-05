@@ -10,16 +10,15 @@ monte_length=10000
 var_point=5
 std_correction = norm.ppf(1-var_point/100.0)
 
-assert (var_point*monte_length/100.0)>=2.0
+assert var_point*monte_length >= 2.0 * 100.0
 
 all_std = []
 all_var = []
 all_es = []
 all_sigma=[]
 
-for unused in range(monte_length):
-
-    data=[gauss(0.0, stdev) for Unused in range(Nlength)]
+for _ in range(monte_length):
+    data = [gauss(0.0, stdev) for _ in range(Nlength)]
     sigma_est = np.std(data)
     stdev_est = np.mean(data) - std_correction*np.std(data)
     var_est = np.percentile(data, var_point)

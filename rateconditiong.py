@@ -70,13 +70,13 @@ def partitionit(system, data, predictor_name , instrument_name, cond_name , pbin
     rate_raw, rate_adjusted, rate_change, rate_change_adjusted = data
 
     if predictor_name =="ALL":
-        if instrument_name == "ALL":
-            # all predictors, all instruments
-            pandl_curve = system.accounts.portfolio().percent()
-        else:
-            # all predictors, one instrument
-            pandl_curve = system.accounts.pandl_for_instrument(instrument_name).percent()
-
+        pandl_curve = (
+            system.accounts.portfolio().percent()
+            if instrument_name == "ALL"
+            else system.accounts.pandl_for_instrument(
+                instrument_name
+            ).percent()
+        )
     elif predictor_name == "LONG_ONLY":
         if instrument_name =="ALL":
             pandl_curves = [system.rawdata.daily_returns(instrument_code) / system.rawdata.daily_denominator_price(
@@ -93,14 +93,13 @@ def partitionit(system, data, predictor_name , instrument_name, cond_name , pbin
             # single instrument, long only
             pandl_curve = 100*system.rawdata.daily_returns(instrument_name)/system.rawdata.daily_denominator_price(instrument_name)
 
-    else:
-        if instrument_name == "ALL":
-            # individual predictors, all instruments
+    elif instrument_name == "ALL":
+        # individual predictors, all instruments
 
-            pandl_curve = system.accounts.pandl_for_trading_rule_weighted(predictor_name).percent()
-        else:
-            # individual predictor, one instrument
-            pandl_curve = system.accounts.pandl_for_instrument_forecast(instrument_name, predictor_name).percent()
+        pandl_curve = system.accounts.pandl_for_trading_rule_weighted(predictor_name).percent()
+    else:
+        # individual predictor, one instrument
+        pandl_curve = system.accounts.pandl_for_instrument_forecast(instrument_name, predictor_name).percent()
 
     pandl_curve = pandl_curve[abs(pandl_curve) < 10]
 
@@ -113,7 +112,7 @@ def partitionit(system, data, predictor_name , instrument_name, cond_name , pbin
     elif cond_name =="Adjusted Change":
         conditioning_variable = rate_change_adjusted
     else:
-        raise Exception("%s not valid" % cond_name)
+        raise Exception(f"{cond_name} not valid")
 
     pandl_list, bounds = partition(pandl_curve, conditioning_variable, pbins)
 
@@ -135,18 +134,20 @@ def SR_sample(sample_pandl):
     return (DAYSINYEAR**.5)*sample_pandl.mean()/sample_pandl.std()
 
 def generate_random_index(boot_length):
-    random_index = [int(uniform(0, boot_length)) for notUsed in range(boot_length)]
-    return random_index
+    return [int(uniform(0, boot_length)) for _ in range(boot_length)]
 
 def sampling_distribution_SR(single_pandl, boot_count = 100):
 
     boot_length = len(single_pandl.index)
-    list_of_indices = [generate_random_index(boot_length) for notUsed in range(boot_count)]
+    list_of_indices = [
+        generate_random_index(boot_length) for _ in range(boot_count)
+    ]
     list_of_random_sample_periods = [single_pandl[single_index] for single_index in list_of_indices]
 
-    SR_samples = [SR_sample(sample_period) for sample_period in list_of_random_sample_periods]
-
-    return SR_samples
+    return [
+        SR_sample(sample_period)
+        for sample_period in list_of_random_sample_periods
+    ]
 
 
 def t_tests(pandl_list):
@@ -155,11 +156,7 @@ def t_tests(pandl_list):
     lowest_SR = SR_list.index(min(SR_list))
 
     target_pandl = pandl_list[lowest_SR]
-    t_list = []
-    for compare_pandl in pandl_list:
-        t_list.append(ttest_ind(target_pandl, compare_pandl))
-
-    return t_list
+    return [ttest_ind(target_pandl, compare_pandl) for compare_pandl in pandl_list]
 
 def multiple_hist_plot(pandl_list, bounds, boot_count = 100):
 
